@@ -1,8 +1,8 @@
 FROM cr.loongnix.cn/loongson/loongnix-server:8.3
 
-ARG BUILDX_VERSION=v0.8.2
+ARG BUILDX_VERSION=v0.9.0
 
-ENV BUILDX_VERSION=v0.8.2 \
+ENV BUILDX_VERSION=${BUILDX_VERSION} \
     GOPATH=/go \
     PATH=$GOPATH/bin:$PATH
 
@@ -23,31 +23,16 @@ WORKDIR /opt/buildx
 ENV GOPROXY=https://goproxy.io \
     GOSUMDB=off \
     GO111MODULE=on \
-    GOOS=linux
+    GOOS=linux \
+    CGO_ENABLED=0
 
-# loongarch64 rewrite go.sum
 RUN set -ex; \
     cd /opt/buildx; \
-    sed -i 's@h1:l9EaZDICImO1ngI+uTifW+ZYvvz7fKISBAKpg+MbWbY=@h1:u9vuu6qqG7nN9a735Noed0ahoUm30iipVRlhgh72N0M=@g' go.sum; \
     go mod download -x; \
     PKG=github.com/docker/buildx VERSION=$(git describe --match 'v[0-9]*' --dirty='' --always --tags) REVISION=$(git rev-parse HEAD); \
     echo "-X ${PKG}/version.Version=${VERSION} -X ${PKG}/version.Revision=${REVISION} -X ${PKG}/version.Package=${PKG}" | tee /tmp/.ldflags; \
     echo -n "${VERSION}" | tee /tmp/.version;
 
-ENV GOPROXY=http://goproxy.loongnix.cn:3000
-
-RUN set -ex; \
-    cd /opt/buildx; \
-    go get -u golang.org/x/sys; \
-    go mod download golang.org/x/term; \
-    go mod vendor; \
-    rm -rf /opt/buildx/vendor;
-
-# unix: add openat2 for linux, https://github.com/golang/sys/commit/eff7692f900947b7d782d16af70ca32cc40774f0
-COPY golang.org/x/sys/unix/*.go $GOPATH/pkg/mod/golang.org/x/sys@v0.0.0-20220520151302-bc2c85ada10a/unix/
-COPY golang.org/x/sys/unix/linux/types.go $GOPATH/pkg/mod/golang.org/x/sys@v0.0.0-20220520151302-bc2c85ada10a/unix/linux/
-
-ENV CGO_ENABLED=0
 ARG LDFLAGS="-w -s"
 
 RUN set -ex; \
