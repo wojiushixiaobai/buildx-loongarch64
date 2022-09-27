@@ -1,6 +1,6 @@
 FROM cr.loongnix.cn/loongson/loongnix-server:8.3
 
-ARG BUILDX_VERSION=v0.9.0
+ARG BUILDX_VERSION=v0.9.1
 
 ENV BUILDX_VERSION=${BUILDX_VERSION} \
     GOPATH=/go \
