@@ -1,18 +1,13 @@
-FROM cr.loongnix.cn/loongson/loongnix-server:8.3
+FROM golang:1.20-buster
 
-ARG BUILDX_VERSION=v0.9.1
+ARG BUILDX_VERSION=v0.10.0
 
-ENV BUILDX_VERSION=${BUILDX_VERSION} \
-    GOPATH=/go \
-    PATH=$GOPATH/bin:$PATH
+ENV BUILDX_VERSION=${BUILDX_VERSION}
 
 RUN set -ex; \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime; \
-    yum -y install loongnix-release-epel; \
-    yum -y install golang-1.18 git file; \
-    mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"; \
-    yum clean all; \
-    rm -rf /var/cache/yum/*;
+    apt-get update; \
+    apt-get install -y git file make
 
 RUN set -ex; \
     git clone -b ${BUILDX_VERSION} https://github.com/docker/buildx /opt/buildx; \
