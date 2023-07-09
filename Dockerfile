@@ -1,4 +1,4 @@
-FROM golang:1.20-buster
+FROM golang:1.20-buster as builder
 
 ARG BUILDX_VERSION=v0.11.0
 
@@ -37,6 +37,12 @@ RUN set -ex; \
     cd /opt/buildx/dist; \
     mv buildx buildx-${BUILDX_VERSION}-linux-$(uname -m); \
     echo "$(sha256sum buildx-${BUILDX_VERSION}-linux-$(uname -m) | awk '{print $1}') buildx-${BUILDX_VERSION}-linux-$(uname -m)" > "checksums.txt";
+
+FROM debian:buster-slim
+
+WORKDIR /opt/buildx
+
+COPY --from=builder /opt/buildx/dist /opt/buildx/dist
 
 VOLUME /dist
 
