@@ -1,6 +1,6 @@
-FROM golang:1.20-buster as builder
+FROM golang:1.21-buster as builder
 
-ARG BUILDX_VERSION=v0.11.0
+ARG BUILDX_VERSION=v0.12.0
 
 ENV BUILDX_VERSION=${BUILDX_VERSION}
 
@@ -10,8 +10,7 @@ RUN set -ex; \
     apt-get install -y git file make
 
 RUN set -ex; \
-    git clone -b ${BUILDX_VERSION} https://github.com/docker/buildx /opt/buildx; \
-    rm -rf /opt/buildx/vendor;
+    git clone -b ${BUILDX_VERSION} https://github.com/docker/buildx /opt/buildx
 
 WORKDIR /opt/buildx
 
