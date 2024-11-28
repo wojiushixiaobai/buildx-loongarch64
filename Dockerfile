@@ -1,8 +1,8 @@
-ARG GO_VERSION=1.21
+ARG GO_VERSION=1.23
 
-FROM golang:${GO_VERSION}-buster as builder
+FROM cr.loongnix.cn/library/golang:${GO_VERSION}-buster as builder
 
-ARG BUILDX_VERSION=v0.12.0
+ARG BUILDX_VERSION=v0.19.1
 
 ENV BUILDX_VERSION=${BUILDX_VERSION}
 
@@ -40,7 +40,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     mv buildx buildx-${BUILDX_VERSION}-linux-$(uname -m); \
     echo "$(sha256sum buildx-${BUILDX_VERSION}-linux-$(uname -m) | awk '{print $1}') buildx-${BUILDX_VERSION}-linux-$(uname -m)" > "checksums.txt";
 
-FROM debian:buster-slim
+FROM cr.loongnix.cn/library/debian:buster-slim
 
 WORKDIR /opt/buildx
 
