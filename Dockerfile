@@ -1,10 +1,14 @@
-FROM golang:1.21-buster as builder
+ARG GO_VERSION=1.21
+
+FROM golang:${GO_VERSION}-buster as builder
 
 ARG BUILDX_VERSION=v0.12.0
 
 ENV BUILDX_VERSION=${BUILDX_VERSION}
 
-RUN set -ex; \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -ex; \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime; \
     apt-get update; \
     apt-get install -y git file make
@@ -14,13 +18,11 @@ RUN set -ex; \
 
 WORKDIR /opt/buildx
 
-ENV GOPROXY=https://goproxy.io \
-    GOSUMDB=off \
-    GO111MODULE=on \
-    GOOS=linux \
+ENV GOFLAGS=-mod=vendor \
     CGO_ENABLED=0
 
-RUN set -ex; \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    set -ex; \
     cd /opt/buildx; \
     go mod download -x; \
     PKG=github.com/docker/buildx VERSION=$(git describe --match 'v[0-9]*' --dirty='' --always --tags) REVISION=$(git rev-parse HEAD); \
@@ -29,7 +31,8 @@ RUN set -ex; \
 
 ARG LDFLAGS="-w -s"
 
-RUN set -ex; \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    set -ex; \
     cd /opt/buildx; \
     mkdir /opt/buildx/dist; \
     go build -ldflags "$(cat /tmp/.ldflags) ${LDFLAGS}" -o /opt/buildx/dist/buildx ./cmd/buildx; \
